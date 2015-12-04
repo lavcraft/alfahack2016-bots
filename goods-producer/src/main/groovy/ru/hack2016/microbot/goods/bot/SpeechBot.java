@@ -25,6 +25,7 @@ public class SpeechBot {
   private SpeechRecognitor speechRecognitor;
 
   public Observable<String> observe() {
+    log.info("start observing");
     return Observable.create(subscriber -> pool.execute(() -> {
       while (!Thread.currentThread().isInterrupted()) {
         log.info("Start speech cycle");

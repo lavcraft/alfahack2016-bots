@@ -14,6 +14,6 @@ class SpeechConfiguration {
   @Bean
   @Lazy(false)
   SpeechRecognitor speechRecognitor() {
-    new SpeechRecognitor(10000)
+    new SpeechRecognitor('queries')
   }
 }

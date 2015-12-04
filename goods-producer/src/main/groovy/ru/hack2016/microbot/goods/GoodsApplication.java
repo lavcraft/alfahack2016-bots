@@ -1,6 +1,8 @@
 package ru.hack2016.microbot.goods;
 
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.request.ParseMode;
+import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -51,11 +53,11 @@ public class GoodsApplication {
         .filter(message -> message.text() != null && !message.text().isEmpty())
         .doOnNext(message -> log.info("user {} said {}", message.from().username(), message.text()))
         .doOnNext(message -> {
-//          goodsTelegramBot.sendMessage(message.chat().id(), "_Bender_: *" + message.text() + "*",
-//              ParseMode.Markdown, false, null, new ReplyKeyboardMarkup(buttonSet1, buttonSet2)
-//                  .oneTimeKeyboard(true)
-//                  .selective(true));
-          goodsTelegramBot.sendMessage(message.chat().id(), "/fuckyou @IvanDobskyBot , hello bitch!");
+          ReplyKeyboardMarkup selective = new ReplyKeyboardMarkup(buttonSet1, buttonSet2)
+              .oneTimeKeyboard(true)
+              .selective(true);
+          goodsTelegramBot.sendMessage(message.chat().id(), "_" + message.text() + "_",
+              ParseMode.Markdown, false, null, null);
         })
         .doOnNext(message -> lastChatId = message.chat().id())
         .doOnError(Throwable::printStackTrace)
@@ -72,7 +74,9 @@ public class GoodsApplication {
       throw new Error("Invalid token: bot.goods.token property");
     }
 
-    speechBot.observe().doOnNext(s -> log.info("speech : {}", s))
+    speechBot.observe()
+        .filter(s -> s != null && !s.isEmpty())
+        .doOnNext(s -> log.info("speech : {}", s))
         .subscribe(msg -> {
           if (lastChatId != 0) {
             goodsTelegramBot.sendMessage(lastChatId, msg);
