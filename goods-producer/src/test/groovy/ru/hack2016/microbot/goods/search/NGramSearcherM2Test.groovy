@@ -32,15 +32,4 @@ class NGramSearcherM2Test extends Specification {
     'угропчег' | 'укроп'
     'мяско'    | 'мясо'
   }
-
-  def 'set of dict'() {
-    when:
-    true
-    then:
-    Set set = new TreeSet()
-    set.addAll(dict)
-    set.forEach{ subs -> println subs}
-  }
-
-
 }
