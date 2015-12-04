@@ -13,7 +13,7 @@ class GoodsBotConfig {
   String token
   String name
   int offset = 0
-  int limit = 10
+  int limit = 100
   int timeout = 30
   long pollPeriod = 1000
 
