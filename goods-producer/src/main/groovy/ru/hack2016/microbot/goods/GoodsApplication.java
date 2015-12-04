@@ -2,6 +2,7 @@ package ru.hack2016.microbot.goods;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.request.ParseMode;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,6 +11,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import ru.hack2016.microbot.goods.bot.Bot;
 import ru.hack2016.microbot.goods.bot.GoodsBotConfig;
 import ru.hack2016.microbot.goods.bot.SpeechBot;
+import ru.hack2016.microbot.goods.client.ItemsUtils;
 import rx.schedulers.Schedulers;
 
 import javax.annotation.PostConstruct;
@@ -46,6 +48,7 @@ public class GoodsApplication {
         .run(args);
   }
 
+  @SneakyThrows
   @PostConstruct
   public void checkAndInit() {
     if (goodsBotConfig.getToken().length() < 5) {
@@ -60,6 +63,11 @@ public class GoodsApplication {
         .doOnNext(msg -> {
           log.info("ids {}", chatIds.size());
           chatIds.forEach(aLong -> goodsTelegramBot.sendMessage(aLong, msg));
+          try {
+            ItemsUtils.send(msg);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
         })
         .subscribe();
 
@@ -71,6 +79,7 @@ public class GoodsApplication {
           log.info("msg : {}", message);
           goodsTelegramBot.sendMessage(message.chat().id(), "_" + message.text() + "_",
               ParseMode.Markdown, false, null, null);
+
         })
         .doOnNext(message -> {
           if (!chatIds.contains(message.chat().id())) {

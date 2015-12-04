@@ -34,7 +34,7 @@ public class SpeechBot {
   @Autowired(required = false)
   private SensorBot sensorBot;
 
-  private volatile boolean isRun = true;
+  private volatile boolean isRun = false;
 
   public Observable<String> observe() {
     if (sensorBot != null) {
@@ -46,17 +46,15 @@ public class SpeechBot {
             .observeOn(Schedulers.from(speechPool))
             .debounce(200, TimeUnit.MILLISECONDS)
             .distinctUntilChanged()
-            .doOnNext(aBoolean -> {
+            .subscribe(aBoolean -> {
               isRun = aBoolean;
               log.info("aboolean : {}", aBoolean);
-            })
-            .subscribe();
+            });
         log.info("Restart gpio");
       });
     }
 
     return Observable.create(subscriber -> speechPool.execute(() -> {
-//        while (!Thread.currentThread().isInterrupted()) {
       log.info("Start speech cycle");
       speechRecognitor.recognize()
           .observeOn(Schedulers.from(speechPool))
@@ -69,7 +67,6 @@ public class SpeechBot {
             }
           });
       log.info("Next speech cycle");
-//        }
       subscriber.onCompleted();
     }));
   }
