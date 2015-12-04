@@ -1,0 +1,11 @@
+group 'ru.microbot'
+version '0.0.1-SNAPSHOT'
+
+apply plugin: 'groovy'
+apply plugin: 'java'
+
+dependencies {
+  compile 'com.github.pengrad:java-telegram-bot-api'
+  compile 'io.reactivex:rxjava'
+  compile 'com.squareup.okhttp:okhttp'
+}
