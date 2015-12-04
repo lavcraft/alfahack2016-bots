@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
 import ru.hack2016.microbot.speechkit.SpeechRecognitor
 
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
 /**
  * @author tolkv
  * @since 04/12/15
@@ -15,5 +18,10 @@ class SpeechConfiguration {
   @Lazy(false)
   SpeechRecognitor speechRecognitor() {
     new SpeechRecognitor('queries')
+  }
+
+  @Bean(name = 'bot.speech.pool')
+  ExecutorService speechExecutorService() {
+    Executors.newFixedThreadPool(1);
   }
 }
