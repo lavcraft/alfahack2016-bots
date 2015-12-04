@@ -1,7 +1,6 @@
 package ru.hack2016.microbot.goods;
 
 import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.model.request.ParseMode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -11,9 +10,7 @@ import org.springframework.context.annotation.Bean;
 import ru.hack2016.microbot.goods.bot.Bot;
 import ru.hack2016.microbot.goods.bot.GoodsBotConfig;
 import ru.hack2016.microbot.goods.bot.SpeechBot;
-import rx.Observable;
 import rx.Subscription;
-import rx.schedulers.Schedulers;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -37,7 +34,7 @@ public class GoodsApplication {
   Subscription subscribe;
   @Autowired
   SpeechBot speechBot;
-  Observable<String> speechObservable;
+  private long lastChatId = 0;
 
   public static void main(String[] args) {
     new SpringApplicationBuilder(GoodsApplication.class)
@@ -47,17 +44,25 @@ public class GoodsApplication {
 
   @Bean
   public CommandLineRunner commandLineRunner() {
+    String[] buttonSet1 = {"пива", "молока"};
+    String[] buttonSet2 = {"огурцов", "рыбы"};
 
     return args -> subscribe = goodsBot.observe()
+        .filter(message -> message.text() != null && !message.text().isEmpty())
         .doOnNext(message -> log.info("user {} said {}", message.from().username(), message.text()))
-        .doOnNext(message -> goodsTelegramBot.sendMessage(message.chat().id(), "Echo *" + message.text() + "*",
-            ParseMode.Markdown, false, null, null))
+        .doOnNext(message -> {
+//          goodsTelegramBot.sendMessage(message.chat().id(), "_Bender_: *" + message.text() + "*",
+//              ParseMode.Markdown, false, null, new ReplyKeyboardMarkup(buttonSet1, buttonSet2)
+//                  .oneTimeKeyboard(true)
+//                  .selective(true));
+          goodsTelegramBot.sendMessage(message.chat().id(), "/fuckyou @IvanDobskyBot , hello bitch!");
+        })
+        .doOnNext(message -> lastChatId = message.chat().id())
         .doOnError(Throwable::printStackTrace)
         .doOnCompleted(() -> log.info("COMPLETED"))
         .onErrorResumeNext(throwable -> {
           return empty();
         })
-        .subscribeOn(Schedulers.immediate())
         .subscribe();
   }
 
@@ -67,10 +72,12 @@ public class GoodsApplication {
       throw new Error("Invalid token: bot.goods.token property");
     }
 
-    log.info("===============================1");
     speechBot.observe().doOnNext(s -> log.info("speech : {}", s))
-        .subscribe();
-    log.info("===============================2");
+        .subscribe(msg -> {
+          if (lastChatId != 0) {
+            goodsTelegramBot.sendMessage(lastChatId, msg);
+          }
+        });
   }
 
   @PreDestroy

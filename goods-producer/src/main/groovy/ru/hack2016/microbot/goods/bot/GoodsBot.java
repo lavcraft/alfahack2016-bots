@@ -59,6 +59,11 @@ public class GoodsBot implements Bot {
 
           collect.forEach(update -> subscriber.onNext(update.message()));
         }
+        try {
+          Thread.sleep(goodsBotConfig.getPollPeriod());
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
       }
     }));
   }
