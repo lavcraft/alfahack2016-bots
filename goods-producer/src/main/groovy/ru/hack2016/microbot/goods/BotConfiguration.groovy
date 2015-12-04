@@ -1,5 +1,6 @@
 package ru.hack2016.microbot.goods
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.impl.BotApi
 import com.pengrad.telegrambot.impl.FileApi
@@ -63,12 +64,23 @@ class BotConfiguration {
 
   @Bean(name = 'bot.goods.pool')
   ExecutorService botExecutorService() {
-    Executors.newFixedThreadPool(1);
+    Executors.newFixedThreadPool(1, ThreadFactoryBuilder.newInstance()
+        .setNameFormat("goods-%d")
+        .build());
   }
 
   @Bean(name = 'bot.sensor.pool')
   ExecutorService sensorExecutorService() {
-    Executors.newFixedThreadPool(1);
+    Executors.newFixedThreadPool(1, ThreadFactoryBuilder.newInstance()
+        .setNameFormat("sensor-%d")
+        .build());
+  }
+
+  @Bean(name = 'bot.telegram.pool')
+  ExecutorService telegramExecutorService() {
+    Executors.newFixedThreadPool(3, ThreadFactoryBuilder.newInstance()
+        .setNameFormat("telegram-%d")
+        .build());
   }
 
   public static RestAdapter.Builder prepare(String botToken, OkClient client) {

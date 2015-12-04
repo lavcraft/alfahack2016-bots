@@ -9,6 +9,10 @@ import rx.Observable
 import rx.Subscriber
 
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
+
+import static rx.Observable.create
 
 /**
  * @author tolkv
@@ -24,11 +28,17 @@ class SensorBot {
   @Autowired
   SensorBotConfig botConfig
 
+  Observable<Boolean> observable
+
+  Consumer<Boolean> callback
+
   public Observable<Boolean> observe() {
-    Observable.create { Subscriber<Boolean> subscriber ->
+    create { Subscriber<Boolean> subscriber ->
       def sensor = new RaspberryColorSensor(botConfig.thresoldLevel, botConfig.pin)
       while (!Thread.currentThread().isInterrupted()) {
         subscriber.onNext(sensor.getState())
+        TimeUnit.MILLISECONDS.sleep(botConfig.sleepTime)
+        callback.accept(sensor.getState())
       }
       subscriber.onCompleted()
     }

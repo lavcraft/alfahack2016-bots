@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.hack2016.microbot.speechkit.SpeechRecognitor;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author tolkv
@@ -20,23 +22,58 @@ import java.util.concurrent.ExecutorService;
 public class SpeechBot {
   @Autowired
   @Qualifier("bot.speech.pool")
-  private ExecutorService pool;
+  private ExecutorService speechPool;
+
+  @Autowired
+  @Qualifier("bot.sensor.pool")
+  private ExecutorService gpipool;
+
   @Autowired
   private SpeechRecognitor speechRecognitor;
 
+  @Autowired(required = false)
+  private SensorBot sensorBot;
+
+  private volatile boolean isRun;
+
   public Observable<String> observe() {
-    return Observable.create(subscriber -> pool.execute(() -> {
-      while (!Thread.currentThread().isInterrupted()) {
-        log.info("Start speech cycle");
-        speechRecognitor
-            .recognize()
-            .doOnNext(subscriber::onNext)
-            .doOnNext(s -> log.info("speech {} ", s))
-            .doOnError(Throwable::printStackTrace)
-            .toBlocking().single();
-        log.info("Next speech cycle");
-      }
-      subscriber.onCompleted();
-    }));
+    if (sensorBot != null) {
+      sensorBot.setCallback(aBoolean1 -> isRun = aBoolean1);
+      log.info("Wait speech cycle");
+      gpipool.execute(() -> {
+        sensorBot.observe()
+            .subscribeOn(Schedulers.from(gpipool))
+            .observeOn(Schedulers.from(gpipool))
+            .debounce(200, TimeUnit.MILLISECONDS)
+            .distinctUntilChanged()
+            .doOnNext(aBoolean -> {
+              isRun = aBoolean;
+              log.info("aboolean : {}", aBoolean);
+            })
+            .subscribe();
+        log.info("Restart gpio");
+      });
+    }
+
+    return Observable.create(subscriber -> {
+      speechPool.execute(() -> {
+        while (!Thread.currentThread().isInterrupted()) {
+          log.info("Start speech cycle");
+          speechRecognitor.recognize()
+              .subscribeOn(Schedulers.from(speechPool))
+              .observeOn(Schedulers.from(speechPool))
+              .doOnNext((t) -> {
+                log.info("isrun : {}", isRun);
+                if (isRun) {
+                  subscriber.onNext(t);
+                }
+              })
+              .doOnError(Throwable::printStackTrace)
+              .toBlocking().single();
+          log.info("Next speech cycle");
+        }
+        subscriber.onCompleted();
+      });
+    });
   }
 }

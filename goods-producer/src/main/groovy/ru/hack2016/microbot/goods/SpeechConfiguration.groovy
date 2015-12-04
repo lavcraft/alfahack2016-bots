@@ -1,5 +1,6 @@
 package ru.hack2016.microbot.goods
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
@@ -22,6 +23,8 @@ class SpeechConfiguration {
 
   @Bean(name = 'bot.speech.pool')
   ExecutorService speechExecutorService() {
-    Executors.newFixedThreadPool(1);
+    Executors.newFixedThreadPool(2, ThreadFactoryBuilder.newInstance()
+        .setNameFormat("speech-%d")
+        .build());
   }
 }
