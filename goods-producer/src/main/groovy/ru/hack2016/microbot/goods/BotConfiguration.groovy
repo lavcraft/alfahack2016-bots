@@ -71,6 +71,11 @@ class BotConfiguration {
     Executors.newFixedThreadPool(1);
   }
 
+  @Bean(name = 'bot.sensor.pool')
+  ExecutorService sensorExecutorService() {
+    Executors.newFixedThreadPool(1);
+  }
+
   public static RestAdapter.Builder prepare(String botToken, OkClient client) {
     new RestAdapter.Builder()
         .setEndpoint("https://api.telegram.org/bot" + botToken)

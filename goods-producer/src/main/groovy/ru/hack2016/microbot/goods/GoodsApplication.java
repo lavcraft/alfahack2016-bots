@@ -11,6 +11,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import ru.hack2016.microbot.goods.bot.Bot;
 import ru.hack2016.microbot.goods.bot.GoodsBotConfig;
+import ru.hack2016.microbot.goods.bot.SensorBot;
 import ru.hack2016.microbot.goods.bot.SpeechBot;
 import rx.Subscription;
 
@@ -32,10 +33,12 @@ public class GoodsApplication {
   Bot goodsBot;
   @Autowired
   TelegramBot goodsTelegramBot;
-
-  Subscription subscribe;
   @Autowired
   SpeechBot speechBot;
+  @Autowired
+  SensorBot sensorBot;
+
+  Subscription subscribe;
   private long lastChatId = 0;
 
   public static void main(String[] args) {
@@ -51,7 +54,7 @@ public class GoodsApplication {
 
     return args -> subscribe = goodsBot.observe()
         .filter(message -> message.text() != null && !message.text().isEmpty())
-        .doOnNext(message -> log.info("user {} said {}", message.from().username(), message.text()))
+        .doOnNext(message -> log.info("user {} said {} in chat {}", message.from().username(), message.text(), message.chat().title()))
         .doOnNext(message -> {
           ReplyKeyboardMarkup selective = new ReplyKeyboardMarkup(buttonSet1, buttonSet2)
               .oneTimeKeyboard(true)
@@ -82,6 +85,8 @@ public class GoodsApplication {
             goodsTelegramBot.sendMessage(lastChatId, msg);
           }
         });
+
+    sensorBot.observe().forEach(aBoolean -> log.info("{}", aBoolean));
   }
 
   @PreDestroy
