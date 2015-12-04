@@ -66,7 +66,7 @@ class BotConfiguration {
     Executors.newFixedThreadPool(1);
   }
 
-  @Bean(name = 'speech.goods.pool')
+  @Bean(name = 'bot.speech.pool')
   ExecutorService speechExecutorService() {
     Executors.newFixedThreadPool(1);
   }

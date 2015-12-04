@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutorService;
 @Component
 public class SpeechBot {
   @Autowired
-  @Qualifier("speech.goods.pool")
+  @Qualifier("bot.speech.pool")
   private ExecutorService pool;
   @Autowired
   private SpeechRecognitor speechRecognitor;
