@@ -12,11 +12,12 @@ buildscript {
     classpath "io.spring.gradle:dependency-management-plugin:$dependencyManagementPluginVersion"
     classpath "com.netflix.nebula:gradle-extra-configurations-plugin:$nebulaPluginVersion"
     classpath "org.jfrog.buildinfo:build-info-extractor-gradle:3.1.2"
+    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.1'
   }
 }
 
 group = "ru.microbot"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 
 allprojects {
   apply plugin: 'io.spring.dependency-management'
@@ -24,6 +25,8 @@ allprojects {
 
   repositories {
     jcenter()
+    maven { url 'http://dl.bintray.com/aatarasoff/maven' }
+    maven { url 'http://dl.bintray.com/lavcraft/maven' }
     mavenCentral()
   }
 
@@ -42,6 +45,7 @@ allprojects {
       dependency 'com.github.pengrad:java-telegram-bot-api:1.2.3'
       dependency 'io.reactivex:rxjava:1.0.17'
       dependency 'com.squareup.okhttp:okhttp:2.6.0'
+      dependency 'ru.hack2016.microbot:alfahack2016-speechkit:0.0.1'
     }
   }
 }
@@ -50,8 +54,8 @@ allprojects {
 subprojects { p ->
   apply plugin: 'java'
   apply plugin: 'groovy'
-  apply plugin: 'com.jfrog.artifactory'
   apply plugin: 'maven-publish'
+  apply plugin: 'com.jfrog.bintray'
 
   tasks.withType(FindBugs) {
     exclude '*.json'
@@ -99,47 +103,23 @@ subprojects { p ->
     publications {
       mavenJava(MavenPublication) {
         from components.java
+
       }
     }
   }
 
-  String repo = p.version.endsWith('SNAPSHOT') ? 'snapshots' : 'releases'
-  artifactoryPublish.doLast {
-    def PADDING = 50
-    log "Upload Artifact".center(60, '.')
-    log repo, "to repo"
-    log pr.version, version
-    log artifactory_contextUrl, 'repository url'
-    log artifactory_user, 'repository user'
-  }
-
-  artifactory {
-    contextUrl = "${artifactory_contextUrl}"
-    publish {
-      repository {
-        repoKey = repo
-        username = "${artifactory_user}"
-        password = "${artifactory_password}"
-        maven = true
-      }
-      defaults {
-        publications('mavenJava')
-      }
-    }
-    resolve {
-      repository {
-        repoKey = 'public'
-        username = "${artifactory_user}"
-        password = "${artifactory_password}"
-        maven = true
-      }
+  bintray {
+    user = bintray_user
+    key = bintray_token
+    publications = ['mavenJava']
+    publish = true
+    pkg {
+      repo = 'maven'
+      name = 'ru.hack2015.microbot.goods'
     }
   }
 
-  artifactoryPublish.dependsOn {
-    ['generatePomFileForMavenJavaPublication', 'build'].find { tasks.findByName(it) }
-  }
-
+  bintrayUpload.dependsOn 'generatePomFileForMavenJavaPublication'
 }
 
 

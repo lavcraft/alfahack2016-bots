@@ -1,5 +1,5 @@
 group 'ru.microbot'
-version '0.0.1-SNAPSHOT'
+version '0.0.1'
 
 apply plugin: 'groovy'
 apply plugin: 'java'
@@ -8,4 +8,5 @@ dependencies {
   compile 'com.github.pengrad:java-telegram-bot-api'
   compile 'io.reactivex:rxjava'
   compile 'com.squareup.okhttp:okhttp'
+  compile 'ru.hack2016.microbot:alfahack2016-speechkit'
 }

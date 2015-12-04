@@ -12,6 +12,9 @@ import retrofit.RestAdapter
 import retrofit.client.OkClient
 import ru.hack2016.microbot.goods.bot.GoodsBotConfig
 
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
 import static java.util.concurrent.TimeUnit.SECONDS
 
 /**
@@ -56,6 +59,16 @@ class BotConfiguration {
   private static RestAdapter restAdaptor(GoodsBotConfig goodsBotConfig, OkHttpClient client) {
     RestAdapter restAdapter = prepare(goodsBotConfig.token, new OkClient(client)).build();
     restAdapter
+  }
+
+  @Bean(name = 'bot.goods.pool')
+  ExecutorService botExecutorService() {
+    Executors.newFixedThreadPool(1);
+  }
+
+  @Bean(name = 'speech.goods.pool')
+  ExecutorService speechExecutorService() {
+    Executors.newFixedThreadPool(1);
   }
 
   public static RestAdapter.Builder prepare(String botToken, OkClient client) {

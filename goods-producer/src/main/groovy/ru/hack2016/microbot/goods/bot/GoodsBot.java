@@ -5,13 +5,14 @@ import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.response.GetUpdatesResponse;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import rx.Observable;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 /**
@@ -20,18 +21,21 @@ import java.util.stream.Collectors;
  */
 @Data
 @Component
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class GoodsBot implements Bot {
-  private final TelegramBot bot;
-  private final GoodsBotConfig goodsBotConfig;
+  @Autowired
+  private TelegramBot bot;
+  @Autowired
+  private GoodsBotConfig goodsBotConfig;
+  @Autowired
+  @Qualifier("bot.goods.pool")
+  private ExecutorService pool;
   private Observable<Message> observable;
   private volatile boolean isRun = true;
 
   @PostConstruct
   public void init() {
-    observable = Observable.create(subscriber -> {
+    observable = Observable.create(subscriber -> pool.execute(() -> {
       int lastUpdatedId = goodsBotConfig.getOffset();
-
       while (true) {
         if (!isRun || Thread.currentThread().isInterrupted()) {
           subscriber.onCompleted();
@@ -56,7 +60,7 @@ public class GoodsBot implements Bot {
           collect.forEach(update -> subscriber.onNext(update.message()));
         }
       }
-    });
+    }));
   }
 
   private GetUpdatesResponse getUpdates(UpdateRequest updateRequest) {

@@ -10,6 +10,8 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import ru.hack2016.microbot.goods.bot.Bot;
 import ru.hack2016.microbot.goods.bot.GoodsBotConfig;
+import ru.hack2016.microbot.goods.bot.SpeechBot;
+import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 
@@ -33,6 +35,9 @@ public class GoodsApplication {
   TelegramBot goodsTelegramBot;
 
   Subscription subscribe;
+  @Autowired
+  SpeechBot speechBot;
+  Observable<String> speechObservable;
 
   public static void main(String[] args) {
     new SpringApplicationBuilder(GoodsApplication.class)
@@ -42,6 +47,7 @@ public class GoodsApplication {
 
   @Bean
   public CommandLineRunner commandLineRunner() {
+
     return args -> subscribe = goodsBot.observe()
         .doOnNext(message -> log.info("user {} said {}", message.from().username(), message.text()))
         .doOnNext(message -> goodsTelegramBot.sendMessage(message.chat().id(), "Echo *" + message.text() + "*",
@@ -60,6 +66,11 @@ public class GoodsApplication {
     if (goodsBotConfig.getToken().length() < 5) {
       throw new Error("Invalid token: bot.goods.token property");
     }
+
+    log.info("===============================1");
+    speechBot.observe().doOnNext(s -> log.info("speech : {}", s))
+        .subscribe();
+    log.info("===============================2");
   }
 
   @PreDestroy
