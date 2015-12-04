@@ -34,7 +34,7 @@ public class SpeechBot {
   @Autowired(required = false)
   private SensorBot sensorBot;
 
-  private volatile boolean isRun;
+  private volatile boolean isRun = true;
 
   public Observable<String> observe() {
     if (sensorBot != null) {
@@ -43,7 +43,7 @@ public class SpeechBot {
       gpipool.execute(() -> {
         sensorBot.observe()
             .subscribeOn(Schedulers.from(gpipool))
-            .observeOn(Schedulers.from(gpipool))
+            .observeOn(Schedulers.from(speechPool))
             .debounce(200, TimeUnit.MILLISECONDS)
             .distinctUntilChanged()
             .doOnNext(aBoolean -> {
@@ -55,25 +55,22 @@ public class SpeechBot {
       });
     }
 
-    return Observable.create(subscriber -> {
-      speechPool.execute(() -> {
-        while (!Thread.currentThread().isInterrupted()) {
-          log.info("Start speech cycle");
-          speechRecognitor.recognize()
-              .subscribeOn(Schedulers.from(speechPool))
-              .observeOn(Schedulers.from(speechPool))
-              .doOnNext((t) -> {
-                log.info("isrun : {}", isRun);
-                if (isRun) {
-                  subscriber.onNext(t);
-                }
-              })
-              .doOnError(Throwable::printStackTrace)
-              .toBlocking().single();
-          log.info("Next speech cycle");
-        }
-        subscriber.onCompleted();
-      });
-    });
+    return Observable.create(subscriber -> speechPool.execute(() -> {
+//        while (!Thread.currentThread().isInterrupted()) {
+      log.info("Start speech cycle");
+      speechRecognitor.recognize()
+          .observeOn(Schedulers.from(speechPool))
+          .doOnError(Throwable::printStackTrace)
+          .subscribe(s -> {
+            log.info("isrun : {}", isRun);
+            if (isRun) {
+              log.info("send on next {}", s);
+              subscriber.onNext(s);
+            }
+          });
+      log.info("Next speech cycle");
+//        }
+      subscriber.onCompleted();
+    }));
   }
 }

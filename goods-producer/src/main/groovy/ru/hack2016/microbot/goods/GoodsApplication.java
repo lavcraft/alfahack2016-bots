@@ -65,7 +65,6 @@ public class GoodsApplication {
 
     goodsBot.observe()
         .subscribeOn(Schedulers.from(telegramPool))
-        .observeOn(Schedulers.from(telegramPool))
         .filter(message -> message.text() != null && !message.text().isEmpty())
         .doOnNext(message -> log.info("user {} said {} in chat {}", message.from().username(), message.text(), message.chat().title()))
         .doOnNext(message -> {
@@ -74,7 +73,7 @@ public class GoodsApplication {
               ParseMode.Markdown, false, null, null);
         })
         .doOnNext(message -> {
-          if (chatIds.contains(message.chat().id())) {
+          if (!chatIds.contains(message.chat().id())) {
             chatIds.add(message.chat().id());
           }
         })
