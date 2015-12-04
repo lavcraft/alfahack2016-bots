@@ -10,9 +10,21 @@ import org.springframework.stereotype.Component
 @Component
 @ConfigurationProperties("bot.goods")
 class GoodsBotConfig {
-  String token;
-  String name;
-  Integer offset = 0;
-  Integer limit = 10;
-  Integer timeout = 30;
+  String token
+  String name
+  int offset = 0
+  int limit = 10
+  int timeout = 30
+  /**
+   * in seconds
+   */
+  int connectionTimeout = 5
+  /**
+   * in seconds
+   */
+  int connectionReadTimeout = 7200
+  /**
+   * in seconds
+   */
+  int connectionWriteTimeout = 5
 }
