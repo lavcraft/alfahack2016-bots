@@ -9,3 +9,5 @@ bot:
     offset: 10
     limit: 10
     timeout: 50
+  sensor:
+    thresold-level: 150

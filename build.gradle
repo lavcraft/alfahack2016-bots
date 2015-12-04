@@ -12,7 +12,7 @@ buildscript {
     classpath "io.spring.gradle:dependency-management-plugin:$dependencyManagementPluginVersion"
     classpath "com.netflix.nebula:gradle-extra-configurations-plugin:$nebulaPluginVersion"
     classpath "org.jfrog.buildinfo:build-info-extractor-gradle:3.1.2"
-    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.1'
+    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.5'
   }
 }
 
