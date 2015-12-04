@@ -17,7 +17,7 @@ class SpeechConfiguration {
   @Bean
   @Lazy(false)
   SpeechRecognitor speechRecognitor() {
-    new SpeechRecognitor('queries')
+    new SpeechRecognitor('freeform')
   }
 
   @Bean(name = 'bot.speech.pool')

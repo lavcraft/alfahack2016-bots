@@ -11,3 +11,4 @@ bot:
     timeout: 50
   sensor:
     thresold-level: 150
+    sleep-time: 100

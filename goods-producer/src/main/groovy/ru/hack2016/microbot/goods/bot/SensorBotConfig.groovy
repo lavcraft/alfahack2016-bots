@@ -11,4 +11,6 @@ import org.springframework.stereotype.Component
 @ConfigurationProperties("bot.sensor")
 class SensorBotConfig {
   int thresoldLevel = 10
+  int pin = 2
+  int sleepTime = 1000
 }

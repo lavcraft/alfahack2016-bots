@@ -11,7 +11,6 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import ru.hack2016.microbot.goods.bot.Bot;
 import ru.hack2016.microbot.goods.bot.GoodsBotConfig;
-import ru.hack2016.microbot.goods.bot.SensorBot;
 import ru.hack2016.microbot.goods.bot.SpeechBot;
 import rx.Subscription;
 
@@ -35,8 +34,8 @@ public class GoodsApplication {
   TelegramBot goodsTelegramBot;
   @Autowired
   SpeechBot speechBot;
-  @Autowired
-  SensorBot sensorBot;
+//  @Autowired
+//  SensorBot sensorBot;
 
   Subscription subscribe;
   private long lastChatId = 0;
@@ -78,15 +77,14 @@ public class GoodsApplication {
     }
 
     speechBot.observe()
-        .filter(s -> s != null && !s.isEmpty())
+        .filter(s -> s != null && !s.isEmpty() && !s.equals("no parse"))
         .doOnNext(s -> log.info("speech : {}", s))
         .subscribe(msg -> {
           if (lastChatId != 0) {
             goodsTelegramBot.sendMessage(lastChatId, msg);
+
           }
         });
-
-    sensorBot.observe().forEach(aBoolean -> log.info("{}", aBoolean));
   }
 
   @PreDestroy
