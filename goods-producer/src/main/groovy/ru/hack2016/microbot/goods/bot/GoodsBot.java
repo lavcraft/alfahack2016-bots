@@ -42,7 +42,7 @@ public class GoodsBot implements Bot {
           break;
         }
 
-        GetUpdatesResponse updates = getUpdates(UpdateRequest.builder()
+        GetUpdatesResponse updates = getUpdates(GoodsBotTelegramUpdateRequest.builder()
             .offset(lastUpdatedId + 1)
             .timeout(goodsBotConfig.getTimeout())
             .limit(goodsBotConfig.getLimit())
@@ -68,7 +68,7 @@ public class GoodsBot implements Bot {
     }));
   }
 
-  private GetUpdatesResponse getUpdates(UpdateRequest updateRequest) {
+  private GetUpdatesResponse getUpdates(GoodsBotTelegramUpdateRequest updateRequest) {
     return bot.getUpdates(updateRequest.getOffset(), updateRequest.getLimit(), updateRequest.getTimeout());
   }
 
