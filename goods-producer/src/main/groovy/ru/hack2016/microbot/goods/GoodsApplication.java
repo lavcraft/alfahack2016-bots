@@ -1,14 +1,17 @@
 package ru.hack2016.microbot.goods;
 
+import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.request.ParseMode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
-import ru.hack2016.microbot.goods.bot.GoodsBot;
+import ru.hack2016.microbot.goods.bot.Bot;
 import ru.hack2016.microbot.goods.bot.GoodsBotConfig;
 import rx.Subscription;
+import rx.schedulers.Schedulers;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -24,9 +27,11 @@ import static rx.Observable.empty;
 public class GoodsApplication {
   @Autowired
   GoodsBotConfig goodsBotConfig;
-
   @Autowired
-  GoodsBot goodsBot;
+  Bot goodsBot;
+  @Autowired
+  TelegramBot goodsTelegramBot;
+
   Subscription subscribe;
 
   public static void main(String[] args) {
@@ -37,17 +42,17 @@ public class GoodsApplication {
 
   @Bean
   public CommandLineRunner commandLineRunner() {
-    return args -> {
-      subscribe = goodsBot.observe()
-          .doOnNext(message -> {
-            log.info("message {}", message);
-          })
-          .doOnError(Throwable::printStackTrace)
-          .doOnCompleted(() -> log.info("COMPLETED"))
-          .onErrorResumeNext(throwable -> {
-            return empty();
-          }).subscribe();
-    };
+    return args -> subscribe = goodsBot.observe()
+        .doOnNext(message -> log.info("user {} said {}", message.from().username(), message.text()))
+        .doOnNext(message -> goodsTelegramBot.sendMessage(message.chat().id(), "Echo *" + message.text() + "*",
+            ParseMode.Markdown, false, null, null))
+        .doOnError(Throwable::printStackTrace)
+        .doOnCompleted(() -> log.info("COMPLETED"))
+        .onErrorResumeNext(throwable -> {
+          return empty();
+        })
+        .subscribeOn(Schedulers.immediate())
+        .subscribe();
   }
 
   @PostConstruct
