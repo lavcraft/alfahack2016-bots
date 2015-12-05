@@ -9,9 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import retrofit.RestAdapter
 import retrofit.client.OkClient
 import ru.hack2016.microbot.goods.bot.GoodsBotConfig
+import ru.hack2016.microbot.raspberry.LCDController
+import ru.hack2016.microbot.raspberry.RaspberryLCDController
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -81,6 +84,23 @@ class BotConfiguration {
     Executors.newFixedThreadPool(3, ThreadFactoryBuilder.newInstance()
         .setNameFormat("telegram-%d")
         .build());
+  }
+
+  @Bean
+  @Profile('sensor')
+  LCDController lcdController() {
+    new RaspberryLCDController()
+  }
+
+  @Bean
+  @Profile('stub')
+  LCDController lcdControllerStub() {
+    new LCDController() {
+      @Override
+      void writeText(int i, String s) {
+
+      }
+    }
   }
 
   public static RestAdapter.Builder prepare(String botToken, OkClient client) {

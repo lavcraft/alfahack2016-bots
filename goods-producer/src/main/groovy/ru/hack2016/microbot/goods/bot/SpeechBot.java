@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.hack2016.microbot.goods.search.SentenceAnalyzer;
+import ru.hack2016.microbot.raspberry.LCDController;
+import ru.hack2016.microbot.raspberry.Transliterator;
 import ru.hack2016.microbot.speechkit.SpeechRecognitor;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -22,20 +24,17 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class SpeechBot {
   @Autowired
+  LCDController lcdController;
+  @Autowired
   @Qualifier("bot.speech.pool")
   private ExecutorService speechPool;
-
   @Autowired
   @Qualifier("bot.sensor.pool")
   private ExecutorService gpipool;
-
   @Autowired
   private SpeechRecognitor speechRecognitor;
-
   @Autowired
   private SentenceAnalyzer sentenceAnalyzer;
-
-
   @Autowired(required = false)
   private SensorBot sensorBot;
 
@@ -43,7 +42,12 @@ public class SpeechBot {
 
   public Observable<String> observe() {
     if (sensorBot != null) {
-      sensorBot.setCallback(aBoolean1 -> isRun = aBoolean1);
+      sensorBot.setCallback(aBoolean1 -> {
+        if (isRun != aBoolean1) {
+          lcdController.writeText(0, "Sleeping...");
+        }
+        isRun = aBoolean1;
+      });
       log.info("Wait speech cycle");
       gpipool.execute(() -> {
         sensorBot.observe()
@@ -66,6 +70,7 @@ public class SpeechBot {
           .doOnError(Throwable::printStackTrace)
           .flatMap(s1 -> {
             log.info("symbol : {}", s1);
+            lcdController.writeText(0, Transliterator.transliterate("Listening..."));
             return sentenceAnalyzer.parse(s1.replace("<", "").replace(">", ""))
                 .onErrorResumeNext(Observable.just(s1));
           })
@@ -73,6 +78,7 @@ public class SpeechBot {
             log.info("isrun : {}", isRun);
             if (isRun) {
               log.info("send on next {}", s);
+              lcdController.writeText(1, Transliterator.transliterate(s));
               subscriber.onNext(s);
             }
           });
