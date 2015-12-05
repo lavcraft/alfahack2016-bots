@@ -18,16 +18,16 @@ class NGrammSentenceAnalyzerTest extends Specification {
     List<String> list = inputStream.readLines()
     dict = list.toArray(new String[list.size()])
     Index index = indexer.createIndex(dict)
-    WordSearcher searcher = new NGramSearcherM2(index, new DamerauLevensteinMetric(), 3, true)
+    WordSearcher searcher = new NGramSearcherM2(index, new DamerauLevensteinMetric(), 1, true)
     analyzer = new NGrammSentenceAnalyzer( searcher, dict)
   }
 
   def 'should parse sentence' () {
     when:
-    List<String> words = analyzer.parse('бот купи мне пива и сосисонов post').toList().toBlocking().single()
+    List<String> words = analyzer.parse('Закажи мне пиво и сосиски').toList().toBlocking().single()
     then:
-    assert words.contains('пиво')
-    assert words.contains('сосиски')
+    assert words.contains('Пиво')
+    assert words.contains('Сосиски')
     assert words.size() == 2
   }
 }
