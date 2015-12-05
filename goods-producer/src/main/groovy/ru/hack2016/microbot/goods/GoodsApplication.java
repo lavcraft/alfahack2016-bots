@@ -57,8 +57,8 @@ public class GoodsApplication {
     }
 
     speechBot.observe()
-        .subscribeOn(Schedulers.from(telegramPool))
-        .observeOn(Schedulers.from(telegramPool))
+//        .subscribeOn(Schedulers.from(telegramPool))
+//        .observeOn(Schedulers.from(telegramPool))
         .filter(s -> s != null && !s.isEmpty() && !s.equals("no parse"))
         .doOnNext(s -> log.info("speech : {}", s))
         .doOnNext(msg -> {
