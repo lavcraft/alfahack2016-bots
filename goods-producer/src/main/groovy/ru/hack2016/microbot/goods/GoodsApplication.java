@@ -15,7 +15,8 @@ import ru.hack2016.microbot.goods.client.ItemsUtils;
 import rx.schedulers.Schedulers;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import static rx.Observable.empty;
@@ -37,7 +38,7 @@ public class GoodsApplication {
   SpeechBot speechBot;
 
   private long lastChatId = 0;
-  private ArrayList<Long> chatIds = new ArrayList<>();
+  private Set<Long> chatIds = new HashSet<>();
   @Autowired
   @Qualifier("bot.telegram.pool")
   private ExecutorService telegramPool;
@@ -74,14 +75,10 @@ public class GoodsApplication {
     goodsBot.observe()
         .subscribeOn(Schedulers.from(telegramPool))
         .filter(message -> message.text() != null && !message.text().isEmpty())
-        .doOnNext(message -> log.info("user {} said {} in chat {}", message.from().username(), message.text(), message.chat().title()))
         .doOnNext(message -> {
-          log.info("msg : {}", message);
-          goodsTelegramBot.sendMessage(message.chat().id(), "_" + message.text() + "_",
-              ParseMode.Markdown, false, null, null);
+          log.info("user {} said {} in chat {}", message.from().username(), message.text(), message.chat().title());
 
-        })
-        .doOnNext(message -> {
+          goodsTelegramBot.sendMessage(message.chat().id(), "*_" + message.text() + "_*", ParseMode.Markdown, false, null, null);
           if (!chatIds.contains(message.chat().id())) {
             chatIds.add(message.chat().id());
           }

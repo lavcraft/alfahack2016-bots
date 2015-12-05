@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.hack2016.microbot.goods.search.SentenceAnalyzer;
+import ru.hack2016.microbot.raspberry.RaspberryLCDController;
+import ru.hack2016.microbot.raspberry.Transliterator;
 import ru.hack2016.microbot.speechkit.SpeechRecognitor;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -22,20 +24,17 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class SpeechBot {
   @Autowired
+  RaspberryLCDController raspberryLCDController;
+  @Autowired
   @Qualifier("bot.speech.pool")
   private ExecutorService speechPool;
-
   @Autowired
   @Qualifier("bot.sensor.pool")
   private ExecutorService gpipool;
-
   @Autowired
   private SpeechRecognitor speechRecognitor;
-
   @Autowired
   private SentenceAnalyzer sentenceAnalyzer;
-
-
   @Autowired(required = false)
   private SensorBot sensorBot;
 
@@ -43,17 +42,24 @@ public class SpeechBot {
 
   public Observable<String> observe() {
     if (sensorBot != null) {
-      sensorBot.setCallback(aBoolean1 -> isRun = aBoolean1);
+      sensorBot.setCallback(aBoolean1 -> {
+        isRun = aBoolean1;
+      });
+
       log.info("Wait speech cycle");
       gpipool.execute(() -> {
         sensorBot.observe()
-            .subscribeOn(Schedulers.from(gpipool))
-            .observeOn(Schedulers.from(speechPool))
+            .observeOn(Schedulers.from(gpipool))
             .debounce(200, TimeUnit.MILLISECONDS)
             .distinctUntilChanged()
             .subscribe(aBoolean -> {
               isRun = aBoolean;
               log.info("aboolean : {}", aBoolean);
+              if (isRun) {
+                raspberryLCDController.writeText(0, Transliterator.transliterate("Слушаю"));
+              } else {
+                raspberryLCDController.writeText(0, Transliterator.transliterate("Не слушаю"));
+              }
             });
         log.info("Restart gpio");
       });
@@ -74,6 +80,7 @@ public class SpeechBot {
             if (isRun) {
               log.info("send on next {}", s);
               subscriber.onNext(s);
+              raspberryLCDController.writeText(1, Transliterator.transliterate(s));
             }
           });
       log.info("Next speech cycle");

@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration
 import retrofit.RestAdapter
 import retrofit.client.OkClient
 import ru.hack2016.microbot.goods.bot.GoodsBotConfig
+import ru.hack2016.microbot.raspberry.RaspberryLCDController
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -81,6 +82,11 @@ class BotConfiguration {
     Executors.newFixedThreadPool(3, ThreadFactoryBuilder.newInstance()
         .setNameFormat("telegram-%d")
         .build());
+  }
+
+  @Bean
+  RaspberryLCDController lcdController() {
+    new RaspberryLCDController()
   }
 
   public static RestAdapter.Builder prepare(String botToken, OkClient client) {
