@@ -13,18 +13,18 @@ class NGrammSentenceAnalyzerTest extends Specification {
   String[] dict;
 
   def setup() {
-    def indexer = new NGramIndexerM2(new SimpleAlphabet((char) 'А', (char) 'я'))
+    def indexer = new NGramIndexerM2(new UnionAlphabet(new SimpleAlphabet((char) 'А', (char) 'я'), new SimpleAlphabet((char)'A', (char)'z')))
     InputStream inputStream = getClass().getClassLoader().getResourceAsStream("goods_dict")
     List<String> list = inputStream.readLines()
     dict = list.toArray(new String[list.size()])
     Index index = indexer.createIndex(dict)
-    WordSearcher searcher = new NGramSearcherM2(index, new DamerauLevensteinMetric(), 2, true)
+    WordSearcher searcher = new NGramSearcherM2(index, new DamerauLevensteinMetric(), 3, true)
     analyzer = new NGrammSentenceAnalyzer( searcher, dict)
   }
 
   def 'should parse sentence' () {
     when:
-    List<String> words = analyzer.parse('бот купи мне пива и сосисонов').toList().toBlocking().single()
+    List<String> words = analyzer.parse('бот купи мне пива и сосисонов post').toList().toBlocking().single()
     then:
     assert words.contains('пиво')
     assert words.contains('сосиски')
