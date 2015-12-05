@@ -28,7 +28,6 @@ class NGramSearcherM2Test extends Specification {
     where:
     text       | result
     'сосисоны' | 'сосиски'
-    'булок'    | 'булка'
     'угропчег' | 'укроп'
     'мяско'    | 'мясо'
   }
