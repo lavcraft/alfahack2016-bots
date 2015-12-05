@@ -21,14 +21,14 @@ import java.util.stream.Collectors;
  */
 @Data
 @Component
-public class GoodsBot implements Bot {
+public class RawBot implements Bot {
   @Autowired
-  @Qualifier("bot.goods.telegram")
+  @Qualifier("bot.raw.telegram")
   private TelegramBot bot;
   @Autowired
-  private GoodsBotConfig goodsBotConfig;
+  private RawBotConfig rawBotConfig;
   @Autowired
-  @Qualifier("bot.goods.pool")
+  @Qualifier("bot.raw.pool")
   private ExecutorService pool;
   private Observable<Message> observable;
   private volatile boolean isRun = true;
@@ -36,7 +36,7 @@ public class GoodsBot implements Bot {
   @PostConstruct
   public void init() {
     observable = Observable.create(subscriber -> pool.execute(() -> {
-      int lastUpdatedId = goodsBotConfig.getOffset();
+      int lastUpdatedId = rawBotConfig.getOffset();
       while (true) {
         if (!isRun || Thread.currentThread().isInterrupted()) {
           subscriber.onCompleted();
@@ -45,8 +45,8 @@ public class GoodsBot implements Bot {
 
         GetUpdatesResponse updates = getUpdates(TelegramBotUpdateRequest.builder()
             .offset(lastUpdatedId + 1)
-            .timeout(goodsBotConfig.getTimeout())
-            .limit(goodsBotConfig.getLimit())
+            .timeout(rawBotConfig.getTimeout())
+            .limit(rawBotConfig.getLimit())
             .build());
 
         if (updates.isOk() && updates.updates().size() > 0) {
@@ -61,7 +61,7 @@ public class GoodsBot implements Bot {
           collect.forEach(update -> subscriber.onNext(update.message()));
         }
         try {
-          Thread.sleep(goodsBotConfig.getPollPeriod());
+          Thread.sleep(rawBotConfig.getPollPeriod());
         } catch (InterruptedException e) {
           e.printStackTrace();
         }

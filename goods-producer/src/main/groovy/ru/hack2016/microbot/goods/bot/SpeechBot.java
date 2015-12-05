@@ -33,10 +33,15 @@ public class SpeechBot {
   private ExecutorService gpipool;
   @Autowired
   private SpeechRecognitor speechRecognitor;
-  @Autowired
-  private SentenceAnalyzer sentenceAnalyzer;
+
   @Autowired(required = false)
   private SensorBot sensorBot;
+
+  @Autowired
+  private SentenceAnalyzer sentenceAnalyzer;
+
+  @Autowired
+  private RawBot rawBot;
 
   private volatile boolean isRun = true;
 
@@ -68,11 +73,15 @@ public class SpeechBot {
       speechRecognitor.recognize()
           .observeOn(Schedulers.from(speechPool))
           .doOnError(Throwable::printStackTrace)
+          .map(s2 -> {
+            rawBot.getBot().sendMessage((long) -11280563, s2);
+            return s2;
+          })
           .flatMap(s1 -> {
             log.info("symbol : {}", s1);
             lcdController.writeText(0, Transliterator.transliterate("Listening..."));
             return sentenceAnalyzer.parse(s1.replace("<", "").replace(">", ""))
-                .onErrorResumeNext(Observable.just(s1));
+                    .onErrorResumeNext(Observable.just(s1));
           })
           .subscribe(s -> {
             log.info("isrun : {}", isRun);

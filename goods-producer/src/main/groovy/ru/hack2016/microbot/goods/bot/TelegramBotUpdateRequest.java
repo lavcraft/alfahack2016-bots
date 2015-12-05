@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class GoodsBotTelegramUpdateRequest {
+public class TelegramBotUpdateRequest {
   private final Integer offset;
   private final Integer limit;
   private final Integer timeout;
