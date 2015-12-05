@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import ru.hack2016.microbot.goods.search.SentenceAnalyzer;
 import ru.hack2016.microbot.speechkit.SpeechRecognitor;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -31,10 +32,14 @@ public class SpeechBot {
   @Autowired
   private SpeechRecognitor speechRecognitor;
 
+  @Autowired
+  private SentenceAnalyzer sentenceAnalyzer;
+
+
   @Autowired(required = false)
   private SensorBot sensorBot;
 
-  private volatile boolean isRun = false;
+  private volatile boolean isRun = true;
 
   public Observable<String> observe() {
     if (sensorBot != null) {
@@ -59,6 +64,11 @@ public class SpeechBot {
       speechRecognitor.recognize()
           .observeOn(Schedulers.from(speechPool))
           .doOnError(Throwable::printStackTrace)
+          .flatMap(s1 -> {
+            log.info("symbol : {}", s1);
+            return sentenceAnalyzer.parse(s1.replace("<", "").replace(">", ""))
+                .onErrorResumeNext(Observable.just(s1));
+          })
           .subscribe(s -> {
             log.info("isrun : {}", isRun);
             if (isRun) {

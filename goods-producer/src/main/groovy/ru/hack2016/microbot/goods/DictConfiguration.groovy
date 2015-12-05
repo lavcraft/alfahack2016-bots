@@ -1,17 +1,7 @@
 package ru.hack2016.microbot.goods
-
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import ru.hack2016.microbot.goods.search.DamerauLevensteinMetric
-import ru.hack2016.microbot.goods.search.Index
-import ru.hack2016.microbot.goods.search.NGramIndexerM2
-import ru.hack2016.microbot.goods.search.NGramSearcherM2
-import ru.hack2016.microbot.goods.search.NGrammSentenceAnalyzer
-import ru.hack2016.microbot.goods.search.SentenceAnalyzer
-import ru.hack2016.microbot.goods.search.SimpleAlphabet
-import ru.hack2016.microbot.goods.search.UnionAlphabet
-import ru.hack2016.microbot.goods.search.WordSearcher
-
+import ru.hack2016.microbot.goods.search.*
 /**
  * @author mgorelikov
  * @since 05/12/15
@@ -26,7 +16,7 @@ class DictConfiguration {
     def list = getClass().getClassLoader().getResourceAsStream("goods_dict").readLines()
     def dict = list.toArray(new String[list.size()])
     def index = indexer.createIndex(dict)
-    def searcher = new NGramSearcherM2(index, new DamerauLevensteinMetric(), 3, true)
+    def searcher = new NGramSearcherM2(index, new DamerauLevensteinMetric(), 2, true)
     new NGrammSentenceAnalyzer(searcher, dict)
   }
 }
