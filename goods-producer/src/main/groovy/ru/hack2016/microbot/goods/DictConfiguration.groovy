@@ -16,7 +16,7 @@ class DictConfiguration {
     def list = getClass().getClassLoader().getResourceAsStream("goods_dict").readLines()
     def dict = list.toArray(new String[list.size()])
     def index = indexer.createIndex(dict)
-    def searcher = new NGramSearcherM2(index, new DamerauLevensteinMetric(), 2, true)
+    def searcher = new NGramSearcherM2(index, new DamerauLevensteinMetric(), 1, true)
     new NGrammSentenceAnalyzer(searcher, dict)
   }
 }
